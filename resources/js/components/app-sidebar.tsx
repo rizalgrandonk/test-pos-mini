@@ -1,4 +1,3 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -11,10 +10,17 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { index as productIndex } from '@/routes/products';
+import customerRoutes from '@/routes/customer';
+import productRoutes from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, StretchHorizontalIcon } from 'lucide-react';
+import {
+    BookOpen,
+    Folder,
+    LayoutGrid,
+    StretchHorizontalIcon,
+    UsersIcon,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -25,8 +31,13 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Products',
-        href: productIndex(),
+        href: productRoutes.index(),
         icon: StretchHorizontalIcon,
+    },
+    {
+        title: 'Customer',
+        href: customerRoutes.index(),
+        icon: UsersIcon,
     },
 ];
 

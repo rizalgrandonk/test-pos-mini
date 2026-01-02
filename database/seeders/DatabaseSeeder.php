@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -28,6 +29,11 @@ class DatabaseSeeder extends Seeder
         Product::factory()
             ->count(100)
             ->withProductCode()
+            ->create();
+        
+        Customer::factory()
+            ->count(100)
+            ->withCode()
             ->create();
     }
 }

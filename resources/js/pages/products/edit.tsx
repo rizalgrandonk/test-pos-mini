@@ -11,18 +11,21 @@ import productRoutes from '@/routes/products';
 import { Product, type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
+import { useQueryClient } from '@tanstack/react-query';
 
-export default function ProductsEdit({product}: {product: Product}) {
+export default function ProductsEdit({ product }: { product: Product }) {
     const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Products',
-        href: productRoutes.index().url,
-    },
-    {
-        title: product.code,
-        href: productRoutes.edit(product.id).url,
-    },
-];
+        {
+            title: 'Products',
+            href: productRoutes.index().url,
+        },
+        {
+            title: product.code,
+            href: productRoutes.edit(product.id).url,
+        },
+    ];
+
+    const queryClient = useQueryClient();
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -42,12 +45,17 @@ export default function ProductsEdit({product}: {product: Product}) {
                     }}
                     transform={(data) => ({
                         ...data,
-                        price: data.price
+                        price:
+                            data.price
                                 ?.toString()
                                 ?.replaceAll('.', '')
-                                ?.replaceAll(",", ".") 
-                            ?? "",
+                                ?.replaceAll(',', '.') ?? '',
                     })}
+                    onSuccess={() => {
+                        queryClient.invalidateQueries({
+                            queryKey: ['products'],
+                        });
+                    }}
                     className="w-full max-w-xl space-y-4"
                 >
                     {({ processing, recentlySuccessful, errors }) => (

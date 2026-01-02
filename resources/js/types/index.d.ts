@@ -48,6 +48,20 @@ export interface Product {
     code: string;
     price: number;
     stock: number;
-    [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface Customer {
+    id: number;
+    name: string;
+    code: string;
+    province?: string;
+    province_id?: number;
+    regency?: string;
+    regency_id?: number;
+    district?: string;
+    district_id?: number;
+    village?: string;
+    village_id?: number;
+    address?: string;
+    postal_code?: string;
+}

@@ -11,6 +11,7 @@ import productRoutes from '@/routes/products';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
+import { useQueryClient } from '@tanstack/react-query';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,6 +25,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ProductsCreate() {
+    const queryClient = useQueryClient();
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Product" />
@@ -42,12 +45,17 @@ export default function ProductsCreate() {
                     }}
                     transform={(data) => ({
                         ...data,
-                        price: data.price
+                        price:
+                            data.price
                                 ?.toString()
                                 ?.replaceAll('.', '')
-                                ?.replaceAll(",", ".") 
-                            ?? "",
+                                ?.replaceAll(',', '.') ?? '',
                     })}
+                    onSuccess={() => {
+                        queryClient.invalidateQueries({
+                            queryKey: ['products'],
+                        });
+                    }}
                     className="w-full max-w-xl space-y-4"
                 >
                     {({ processing, recentlySuccessful, errors }) => (
