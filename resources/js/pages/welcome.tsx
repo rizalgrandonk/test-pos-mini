@@ -25,7 +25,8 @@ export default function Welcome({
                     <CardContent className="grid w-full grid-cols-2 p-6">
                         <div className="flex flex-col justify-center">
                             <h1 className="text-4xl">
-                                Welcome to <span className="font-bold">Pos Mini</span>
+                                Welcome to{' '}
+                                <span className="font-bold">Pos Mini</span>
                             </h1>
                         </div>
                         {auth.user ? (
@@ -45,9 +46,11 @@ export default function Welcome({
                                 >
                                     <Link href={login()}>Login</Link>
                                 </Button>
-                                <Button asChild className="w-full">
-                                    <Link href={register()}>Register</Link>
-                                </Button>
+                                {canRegister && (
+                                    <Button asChild className="w-full">
+                                        <Link href={register()}>Register</Link>
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </CardContent>

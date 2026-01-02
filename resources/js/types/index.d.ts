@@ -24,7 +24,7 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
-    quote: { message: string; author: string };
+    flash: { success: string | null; error: string | null };
     auth: Auth;
     sidebarOpen: boolean;
     [key: string]: unknown;
@@ -41,3 +41,13 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Product {
+    id: number;
+    name: string;
+    code: string;
+    price: number;
+    stock: number;
+    [key: string]: unknown; // This allows for additional properties...
+}
+
