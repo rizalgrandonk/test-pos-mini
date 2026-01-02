@@ -1,11 +1,12 @@
 import ProductController from '@/actions/App/Http/Controllers/ProductController';
 import { useDataTableQuery } from '@/hooks/use-data-table-query';
 import { formatCurrency } from '@/lib/utils';
-import { table as productTableRoute } from '@/routes/products';
+import productRoutes, { table as productTableRoute } from '@/routes/products';
 import { Product } from '@/types';
-import { Form, router } from '@inertiajs/react';
+import { Form, Link, router } from '@inertiajs/react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { ColumnDef, SortingState } from '@tanstack/react-table';
+import { PlusIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DataTable } from '../data-table/DataTable';
 import { DataTablePagination } from '../data-table/DataTablePagination';
@@ -21,7 +22,6 @@ import {
     DialogTitle,
 } from '../ui/dialog';
 import { Spinner } from '../ui/spinner';
-import productRoutes from '@/routes/products';
 
 const columns: ColumnDef<Product>[] = [
     {
@@ -61,7 +61,7 @@ export default function ProductTable() {
             ...columns,
             actionsColumn<Product>({
                 onEdit: (row) => {
-                    router.visit(productRoutes.edit(row.id).url)
+                    router.visit(productRoutes.edit(row.id).url);
                 },
                 onDelete: (row) => {
                     setSelectedData(row);
@@ -94,7 +94,7 @@ export default function ProductTable() {
 
     return (
         <div className="flex grow flex-col gap-2 overflow-hidden">
-            <div className="p-2">
+            <div className="flex items-center justify-between p-2">
                 <DataTableToolbar
                     search={search}
                     selectedCount={selectedIds.length}
@@ -104,6 +104,14 @@ export default function ProductTable() {
                     }}
                     onDelete={() => setIsBulkDeleteDialogOpen(true)}
                 />
+
+                <div className="flex items-center gap-4">
+                    <Button asChild>
+                        <Link href={productRoutes.create().url}>
+                            <PlusIcon /> Add New Product
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <ScrollArea className="relative grow overflow-y-auto">

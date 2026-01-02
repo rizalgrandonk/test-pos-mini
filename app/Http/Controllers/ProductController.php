@@ -72,8 +72,7 @@ class ProductController extends Controller
 
             $product = Product::create($data);
 
-            return to_route('products.index');
-            // return to_route('products.edit', ['id' => $product->id]);
+            return to_route('products.edit', ['id' => $product->id]);
         } catch (\Exception $e) {
             Log::error('Product store error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
