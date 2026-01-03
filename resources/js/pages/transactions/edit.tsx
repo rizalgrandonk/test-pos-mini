@@ -1,21 +1,25 @@
 import TransactionHeaderController from '@/actions/App/Http/Controllers/TransactionHeaderController';
 import Heading from '@/components/heading';
+import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
+import DetailTransactionTable from '@/components/transactions/TransactionDetailTable';
 import { AsyncSearchableSelect } from '@/components/ui/async-searchable-select';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import DateInput from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
 import { searchCustomer } from '@/lib/customers';
+import { formatCurrency } from '@/lib/utils';
 import transactionRoutes from '@/routes/transactions';
 import { TransactionHeader, type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
 import { useQueryClient } from '@tanstack/react-query';
 
-export default function TransactionCreate({
+export default function TransactionEdit({
     transaction,
 }: {
     transaction: TransactionHeader;
@@ -33,16 +37,30 @@ export default function TransactionCreate({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Detail Transaction ${transaction.invoice_number}`} />
+            <Head
+                title={`Data Transaction Header ${transaction.invoice_number}`}
+            />
 
-            <div className="overflow-auto p-4">
+            <div className="flex grow flex-col overflow-hidden p-4">
                 <Heading
-                    title="Detail Transaction"
-                    description={`Detail transaction ${transaction.invoice_number}`}
+                    title="Data Transaction Header"
+                    description={`Data transaction header ${transaction.invoice_number}`}
                     className="mb-4"
                 />
 
                 <TransactionEditForm transaction={transaction} />
+
+                <div className="mt-8 flex grow flex-col overflow-hidden gap-2">
+                    <HeadingSmall
+                        title="Transaction Details"
+                        description={`List transaction details for ${transaction.invoice_number}`}
+                    />
+                    <Card className="flex grow flex-col overflow-hidden p-0">
+                        <CardContent className="flex grow flex-col overflow-hidden p-0">
+                            <DetailTransactionTable transaction={transaction} />
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </AppLayout>
     );
@@ -71,11 +89,11 @@ function TransactionEditForm({
             {({ processing, recentlySuccessful, errors }) => (
                 <>
                     <div className="grid gap-1">
-                        <Label htmlFor="code">Invoice Number</Label>
+                        <Label htmlFor="invoice_number">Invoice Number</Label>
                         <Input
-                            id="code"
+                            id="invoice_number"
                             className="block w-full"
-                            name="code"
+                            name="invoice_number"
                             placeholder="Invoice Number"
                             defaultValue={transaction.invoice_number}
                             disabled
@@ -113,6 +131,21 @@ function TransactionEditForm({
                             aria-invalid={!!errors.customer_id}
                         />
                         <InputError message={errors.customer_id} />
+                    </div>
+
+                    <div className="grid gap-1">
+                        <Label htmlFor="total">Total</Label>
+                        <Input
+                            id="total"
+                            className="block w-full"
+                            name="total"
+                            placeholder="Total"
+                            defaultValue={formatCurrency(transaction.total)}
+                            disabled
+                            readOnly
+                            aria-invalid={!!errors.total}
+                        />
+                        <InputError message={errors.total} />
                     </div>
 
                     <div className="flex items-center gap-4">

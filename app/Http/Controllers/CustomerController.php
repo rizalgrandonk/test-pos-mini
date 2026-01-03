@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CustomerRequest;
 use Illuminate\Http\Request;
 use \App\Models\Customer;
+use App\Models\TransactionHeader;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -97,9 +98,7 @@ class CustomerController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors([
-                'delete' => 'An unexpected error occurred. Please try again.',
-            ])->with(
+            return back()->with(
                 'error',
                 'An unexpected error occurred. Please try again.',
             );
@@ -130,9 +129,7 @@ class CustomerController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors([
-                'delete' => 'An unexpected error occurred. Please try again.',
-            ])->with(
+            return back()->with(
                 'error',
                 'An unexpected error occurred. Please try again.',
             );
@@ -153,7 +150,14 @@ class CustomerController extends Controller
                 );
             }
 
-            // TODO handle check customer with transaction
+            if (TransactionHeader::where('customer_id', $customer->id)->exists()) {
+                return back()->withErrors([
+                    'delete' => 'Transaction with the customer exists',
+                ])->with(
+                    'error',
+                    'Transaction with the customer exists',
+                );
+            }
 
             $customer->delete();
 
@@ -182,7 +186,14 @@ class CustomerController extends Controller
         ]);
 
         try {
-            // TODO handle check customer with transaction
+            if (TransactionHeader::whereIn('customer_id', $validated['ids'])->exists()) {
+                return back()->withErrors([
+                    'delete' => 'Transaction with the customer exists',
+                ])->with(
+                    'error',
+                    'Transaction with the customer exists',
+                );
+            }
 
             Customer::whereIn('id', $validated['ids'])->delete();
 

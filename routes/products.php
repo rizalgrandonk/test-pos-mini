@@ -6,6 +6,8 @@ use App\Http\Controllers\ProductController;
 Route::middleware('auth')->prefix('products')->group(function () {
     Route::get('/table', [ProductController::class, 'table'])
         ->name('products.table');
+    Route::get('/search', [ProductController::class, 'search'])
+        ->name('products.search');
     Route::get('/create', [ProductController::class, 'create'])
         ->name('products.create');
     Route::delete('/delete/bulk', [ProductController::class, 'bulkDestroy'])

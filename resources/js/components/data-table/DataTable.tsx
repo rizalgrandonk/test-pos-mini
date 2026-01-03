@@ -100,7 +100,7 @@ export function DataTable<TData>({
             <TableBody>
                 {table.getRowModel().rows.length ? (
                     table.getRowModel().rows.map((row) => (
-                        <TableRow key={row.id}>
+                        <TableRow key={row.original.id}>
                             {row.getVisibleCells().map((cell) => (
                                 <TableCell key={cell.id}>
                                     {flexRender(

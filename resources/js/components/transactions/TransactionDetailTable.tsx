@@ -1,7 +1,11 @@
-import CustomerController from '@/actions/App/Http/Controllers/CustomerController';
+import TransactionDetailController from '@/actions/App/Http/Controllers/TransactionDetailController';
 import { useDataTableQuery } from '@/hooks/use-data-table-query';
-import customerRoutes from '@/routes/customer';
-import { Customer } from '@/types';
+import { useDebounce } from '@/hooks/use-debounce';
+import { formatCurrency } from '@/lib/utils';
+import productRoutes from '@/routes/products';
+import transactionRoutes from '@/routes/transactions';
+import transactionDetailRoutes from '@/routes/transactions/detail';
+import { TransactionDetailTable, TransactionHeader } from '@/types';
 import { Form, Link, router } from '@inertiajs/react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { ColumnDef, SortingState } from '@tanstack/react-table';
@@ -21,54 +25,60 @@ import {
     DialogTitle,
 } from '../ui/dialog';
 import { Spinner } from '../ui/spinner';
-import { useDebounce } from '@/hooks/use-debounce';
 
-const columns: ColumnDef<Customer>[] = [
+const columns: ColumnDef<TransactionDetailTable>[] = [
+    // {
+    //     accessorKey: 'transaction_header_invoice_number',
+    //     header: 'Invoice Number',
+    // },
     {
-        accessorKey: 'code',
-        header: 'Code',
+        accessorKey: 'product_name',
+        header: 'Product',
         cell: ({ row }) => (
             <Button variant="link" asChild>
-                <Link href={customerRoutes.edit(row.original.id).url}>
-                    {row.original.code}
+                <Link href={productRoutes.edit(row.original.product_id).url}>
+                    {row.original.product_name}
                 </Link>
             </Button>
         ),
     },
     {
-        accessorKey: 'name',
-        header: 'Name',
+        accessorKey: 'product_code',
+        header: 'Product Code',
         cell: ({ row }) => (
             <Button variant="link" asChild>
-                <Link href={customerRoutes.edit(row.original.id).url}>
-                    {row.original.name}
+                <Link href={productRoutes.edit(row.original.product_id).url}>
+                    {row.original.product_code}
                 </Link>
             </Button>
         ),
     },
     {
-        accessorKey: 'village',
-        header: 'Vilage',
+        accessorKey: 'qty',
+        header: 'Quantity',
     },
     {
-        accessorKey: 'district',
-        header: 'District',
+        accessorKey: 'price',
+        header: 'Price',
+        cell: ({ row }) => formatCurrency(row.original.price),
     },
     {
-        accessorKey: 'regency',
-        header: 'Regency',
+        accessorKey: 'net_price',
+        header: 'Net Price',
+        cell: ({ row }) => formatCurrency(row.original.net_price),
     },
     {
-        accessorKey: 'province',
-        header: 'Province',
-    },
-    {
-        accessorKey: 'postal_code',
-        header: 'Postal Code',
+        accessorKey: 'subtotal',
+        header: 'Sub Total',
+        cell: ({ row }) => formatCurrency(row.original.subtotal),
     },
 ];
 
-export default function CustomerTable() {
+export default function DetailTransactionTable({
+    transaction,
+}: {
+    transaction: TransactionHeader;
+}) {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [search, setSearch] = useState('');
@@ -76,19 +86,24 @@ export default function CustomerTable() {
     const [rowSelection, setRowSelection] = useState({});
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState<Customer | undefined>(
-        undefined,
-    );
+    const [selectedData, setSelectedData] = useState<
+        TransactionDetailTable | undefined
+    >(undefined);
 
-    const debouncedSearch = useDebounce(search)
+    const debouncedSearch = useDebounce(search);
 
     const tableColumns = useMemo(
         () => [
-            selectColumn<Customer>(),
+            selectColumn<TransactionDetailTable>(),
             ...columns,
-            actionsColumn<Customer>({
+            actionsColumn<TransactionDetailTable>({
                 onEdit: (data) => {
-                    router.visit(customerRoutes.edit(data.id).url);
+                    router.visit(
+                        transactionDetailRoutes.edit.url({
+                            header_id: transaction.id,
+                            id: data.id,
+                        }),
+                    );
                 },
                 onDelete: (data) => {
                     setSelectedData(data);
@@ -104,9 +119,9 @@ export default function CustomerTable() {
             ? `${sorting[0].id}:${sorting[0].desc ? 'desc' : 'asc'}`
             : undefined;
 
-    const { data, ...query } = useDataTableQuery<Customer>(
-        'customers',
-        customerRoutes.table.url(),
+    const { data, ...query } = useDataTableQuery<TransactionDetailTable>(
+        transactionDetailRoutes.table(transaction.id).url,
+        transactionDetailRoutes.table(transaction.id).url,
         {
             page,
             perPage: perPage,
@@ -134,8 +149,13 @@ export default function CustomerTable() {
 
                 <div className="flex items-center gap-4">
                     <Button asChild>
-                        <Link href={customerRoutes.create().url}>
-                            <PlusIcon /> Add New Customer
+                        <Link
+                            href={
+                                transactionDetailRoutes.create(transaction.id)
+                                    .url
+                            }
+                        >
+                            <PlusIcon /> Add New Transaction Detail
                         </Link>
                     </Button>
                 </div>
@@ -180,6 +200,9 @@ export default function CustomerTable() {
                     setSelectedData(undefined);
                     setIsDeleteDialogOpen(false);
                     query.refetch();
+                    router.visit(transactionRoutes.edit(transaction.id).url, {
+                        only: ['transaction'],
+                    });
                 }}
             />
 
@@ -187,10 +210,14 @@ export default function CustomerTable() {
                 isOpen={isBulkDeleteDialogOpen}
                 onOpenChange={setIsBulkDeleteDialogOpen}
                 selectedIds={selectedIds}
+                trxHeaderId={transaction.id}
                 onSuccess={() => {
                     setRowSelection({});
                     setIsBulkDeleteDialogOpen(false);
                     query.refetch();
+                    router.visit(transactionRoutes.edit(transaction.id).url, {
+                        only: ['transaction'],
+                    });
                 }}
             />
         </div>
@@ -204,7 +231,7 @@ function DeleteDialog({
     onOpenChange,
 }: {
     isOpen?: boolean;
-    selectedData?: Customer;
+    selectedData?: TransactionDetailTable;
     onSuccess?: () => void;
     onOpenChange: (open: boolean) => void;
 }) {
@@ -216,19 +243,17 @@ function DeleteDialog({
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogTitle>
-                    Are you sure you want to delete this customer?
+                    Are you sure you want to delete this transaction?
                 </DialogTitle>
                 <DialogDescription>
-                    This action can not be revert, make sure there is no
-                    transaction associated with this customer
-                </DialogDescription>
-                <DialogDescription>
-                    <span className="font-bold">{selectedData.code}</span> -{' '}
-                    {selectedData.name}
+                    This action can not be revert!
                 </DialogDescription>
 
                 <Form
-                    {...CustomerController.destroy.form(selectedData.id)}
+                    {...TransactionDetailController.destroy.form({
+                        header_id: selectedData.transaction_header_id,
+                        id: selectedData.id,
+                    })}
                     options={{
                         preserveScroll: true,
                     }}
@@ -273,16 +298,18 @@ function DeleteDialog({
 
 function BulkDeleteDialog({
     selectedIds,
+    trxHeaderId,
     isOpen,
     onSuccess,
     onOpenChange,
 }: {
     isOpen?: boolean;
     selectedIds?: number[];
+    trxHeaderId?: number;
     onSuccess?: () => void;
     onOpenChange: (open: boolean) => void;
 }) {
-    if (!selectedIds || selectedIds.length < 1) {
+    if (!selectedIds || !trxHeaderId || selectedIds.length < 1) {
         return null;
     }
 
@@ -291,15 +318,16 @@ function BulkDeleteDialog({
             <DialogContent>
                 <DialogTitle>
                     Are you sure you want to delete this {selectedIds.length}{' '}
-                    customers?
+                    transactions?
                 </DialogTitle>
                 <DialogDescription>
-                    This action can not be revert, make sure there is no
-                    transaction associated with this customers
+                    This action can not be revert!
                 </DialogDescription>
 
                 <Form
-                    {...CustomerController.bulkDestroy.form()}
+                    {...TransactionDetailController.bulkDestroy.form({
+                        header_id: trxHeaderId,
+                    })}
                     transform={(data) => ({ ...data, ids: selectedIds })}
                     options={{
                         preserveScroll: true,

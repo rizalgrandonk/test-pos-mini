@@ -35,6 +35,8 @@ interface AsyncSearchableSelectProps<T> {
 
     getValue: (item: T) => string | number;
     getLabel: (item: T) => string;
+
+    onSelectedItem?: (item: T) => void;
 }
 
 export function AsyncSearchableSelect<T>({
@@ -49,6 +51,7 @@ export function AsyncSearchableSelect<T>({
     searchFn,
     getValue,
     getLabel,
+    onSelectedItem,
     ...props
 }: AsyncSearchableSelectProps<T>) {
     const [currentValue, setCurrentValue] = useState<string | number>(
@@ -122,6 +125,7 @@ export function AsyncSearchableSelect<T>({
                                         onSelect={() => {
                                             onChange?.(itemValue);
                                             setCurrentValue(itemValue);
+                                            onSelectedItem?.(item)
                                             setOpen(false);
                                         }}
                                     >

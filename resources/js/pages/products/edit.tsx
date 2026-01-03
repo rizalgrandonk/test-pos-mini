@@ -58,7 +58,7 @@ export default function ProductsEdit({ product }: { product: Product }) {
                     }}
                     className="w-full max-w-xl space-y-4"
                 >
-                    {({ processing, recentlySuccessful, errors }) => (
+                    {({ processing, recentlySuccessful, errors, isDirty }) => (
                         <>
                             <div className="grid gap-1">
                                 <Label htmlFor="name">Name</Label>
@@ -115,7 +115,7 @@ export default function ProductsEdit({ product }: { product: Product }) {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <Button disabled={processing} type="submit">
+                                <Button disabled={processing || !isDirty} type="submit">
                                     {processing && <Spinner />}
                                     Save
                                 </Button>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TransactionDetailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransactionHeaderController;
 
@@ -20,7 +21,41 @@ Route::middleware('auth')->prefix('transactions')->group(function () {
         ->name('transactions.index');
     Route::post('/', [TransactionHeaderController::class, 'store'])
         ->name('transactions.store');
+    
+    // DETAIL
+    Route::get(
+        '/{header_id}/detail/table', 
+        [TransactionDetailController::class, 'table']
+    )->name('transactions.detail.table');
+    
+    Route::get(
+        '/{header_id}/detail/create',
+        [TransactionDetailController::class,'create']
+    )->name('transactions.detail.create');
 
+    Route::delete(
+        '/{header_id}/detail/delete/bulk', 
+        [TransactionDetailController::class, 'bulkDestroy']
+    )->name('transactions.detail.bulkDestroy');
 
+    Route::delete(
+        '/{header_id}/detail/delete/{id}', 
+        [TransactionDetailController::class, 'destroy']
+    )->name('transactions.detail.destroy');
+
+    Route::get('/{header_id}/detail/{id}',
+        [TransactionDetailController::class,
+        'edit']
+    )->name('transactions.detail.edit');
+    
+    Route::post('/{header_id}/detail/{id}',
+        [TransactionDetailController::class,
+        'update']
+    )->name('transactions.detail.update');
+    
+    Route::post('/{header_id}/detail/',
+        [TransactionDetailController::class,
+        'store']
+    )->name('transactions.detail.store');
     
 });

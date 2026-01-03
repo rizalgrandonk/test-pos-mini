@@ -57,4 +57,12 @@ class TransactionHeader extends Model
 
         return "{$prefix}/{$yearMonth}/{$numberPadded}";
     }
+
+    public function recalculateTotal()
+    {
+        $total = $this->transactionDetails()->sum('subtotal');
+        $this->update([
+            'total' => $total
+        ]);
+    }
 }

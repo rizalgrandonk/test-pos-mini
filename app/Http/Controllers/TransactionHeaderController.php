@@ -95,9 +95,7 @@ class TransactionHeaderController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors([
-                'delete' => 'An unexpected error occurred. Please try again.',
-            ])->with(
+            return back()->with(
                 'error',
                 'An unexpected error occurred. Please try again.',
             );
@@ -110,9 +108,7 @@ class TransactionHeaderController extends Controller
             $transaction = TransactionHeader::find($id);
 
             if (!$transaction) {
-                return back()->withErrors([
-                    'delete' => 'Data not found',
-                ])->with(
+                return back()->with(
                     'error',
                     'Data not found',
                 );
@@ -128,9 +124,7 @@ class TransactionHeaderController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors([
-                'delete' => 'An unexpected error occurred. Please try again.',
-            ])->with(
+            return back()->with(
                 'error',
                 'An unexpected error occurred. Please try again.',
             );

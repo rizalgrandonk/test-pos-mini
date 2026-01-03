@@ -22,4 +22,17 @@ class Product extends Model
     {
         return $this->hasMany(TransactionDetail::class, 'product_id');
     }
+
+    public function adjustStock(int $delta)
+    {
+        $newStock = $this->stock + $delta;
+
+        if ($newStock < 0) {
+            throw new \RuntimeException('Insufficient stock');
+        }
+
+        $this->updateQuietly([
+            'stock' => $newStock,
+        ]);
+    }
 }

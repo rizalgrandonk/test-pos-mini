@@ -48,11 +48,32 @@ class ProductController extends Controller
         );
     }
 
+    public function search(Request $request)
+    {
+        $search = $request->string('q');
+        $available = $request->string('available');
+
+        $query = Product::query()
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('code', 'LIKE', "%{$search}%")
+                    ->orWhere('id', '=', $search);
+            });
+
+        if ($available == "1") {
+            $query->where('stock', '>', 0);
+        }
+
+        return $query->orderBy('name')
+            ->limit(10)
+            ->get();
+    }
+
     public function create(Request $request): Response
     {
         return Inertia::render('products/create');
     }
-    
+
     public function edit($id): Response
     {
         $product = Product::find($id);
@@ -79,9 +100,7 @@ class ProductController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors([
-                'delete' => 'An unexpected error occurred. Please try again.',
-            ])->with(
+            return back()->with(
                 'error',
                 'An unexpected error occurred. Please try again.',
             );
@@ -94,9 +113,7 @@ class ProductController extends Controller
             $product = Product::find($id);
 
             if (!$product) {
-                return back()->withErrors([
-                    'delete' => 'Data not found',
-                ])->with(
+                return back()->with(
                     'error',
                     'Data not found',
                 );
@@ -112,9 +129,7 @@ class ProductController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->withErrors([
-                'delete' => 'An unexpected error occurred. Please try again.',
-            ])->with(
+            return back()->with(
                 'error',
                 'An unexpected error occurred. Please try again.',
             );

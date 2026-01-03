@@ -1,3 +1,4 @@
+import { DiscountType } from '@/lib/transactions';
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
@@ -72,7 +73,29 @@ export interface TransactionHeader {
     customer_id: number;
     invoice_date: string;
     total: number;
-    customer: Customer
+
+    customer?: Customer;
+}
+
+export interface TransactionDetail {
+    id: number;
+    transaction_header_id: number;
+    product_id: number;
+    qty: number;
+    price: number;
+    net_price: number;
+    subtotal: number;
+
+    transaction_header?: TransactionHeader;
+    product?: Product;
+    discounts?: TransactionDiscount[]
+}
+
+export interface TransactionDiscount {
+    id: number
+    sequence: number
+    type: 'PERCENTAGE' | 'AMOUNT'
+    value: number
 }
 
 export interface TransactionHeaderTable {
@@ -84,3 +107,31 @@ export interface TransactionHeaderTable {
     customer_name: string;
     customer_code: string;
 }
+
+export interface TransactionDetailTable {
+    id: number;
+    transaction_header_id: number;
+    product_id: number;
+    qty: number;
+    price: number;
+    net_price: number;
+    subtotal: number;
+    transaction_header_invoice_number: string;
+    product_name: string;
+    product_code: string;
+}
+
+export type DiscountForm = {
+    id?: number;
+    sequence: number;
+    type: DiscountType;
+    value: number | '';
+};
+
+export type TransactionDetailForm = {
+    transaction_header_id: number;
+    product_id: number | '';
+    qty: number | '';
+    price: number | '';
+    discounts: DiscountForm[];
+};

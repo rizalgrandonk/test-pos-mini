@@ -1,10 +1,14 @@
 import TransactionHeaderController from '@/actions/App/Http/Controllers/TransactionHeaderController';
 import { useDataTableQuery } from '@/hooks/use-data-table-query';
+import { useDebounce } from '@/hooks/use-debounce';
+import { formatCurrency } from '@/lib/utils';
 import transactionRoutes from '@/routes/transactions';
+import customerRoutes from '@/routes/customer';
 import { TransactionHeaderTable } from '@/types';
 import { Form, Link, router } from '@inertiajs/react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { ColumnDef, SortingState } from '@tanstack/react-table';
+import { format } from 'date-fns/format';
 import { PlusIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DataTable } from '../data-table/DataTable';
@@ -21,32 +25,51 @@ import {
     DialogTitle,
 } from '../ui/dialog';
 import { Spinner } from '../ui/spinner';
-import { formatCurrency } from '@/lib/utils';
-import {format} from 'date-fns/format'
-import { useDebounce } from '@/hooks/use-debounce';
 
 const columns: ColumnDef<TransactionHeaderTable>[] = [
     {
         accessorKey: 'invoice_number',
         header: 'Invoice Number',
+        cell: ({ row }) => (
+            <Button variant="link" asChild>
+                <Link href={transactionRoutes.edit(row.original.id).url}>
+                    {row.original.invoice_number}
+                </Link>
+            </Button>
+        ),
     },
     {
         accessorKey: 'invoice_date',
         header: 'Invoice Date',
-        cell: ({ row }) => format(new Date(row.original.invoice_date), "dd-MM-yyyy")
+        cell: ({ row }) =>
+            format(new Date(row.original.invoice_date), 'dd-MM-yyyy'),
     },
     {
         accessorKey: 'total',
         header: 'Total',
-        cell: ({ row }) => formatCurrency(row.original.total)
+        cell: ({ row }) => formatCurrency(row.original.total),
     },
     {
         accessorKey: 'customer_name',
         header: 'Customer Name',
+        cell: ({ row }) => (
+            <Button variant="link" asChild>
+                <Link href={customerRoutes.edit(row.original.customer_id).url}>
+                    {row.original.customer_name}
+                </Link>
+            </Button>
+        ),
     },
     {
         accessorKey: 'customer_code',
         header: 'Customer Code',
+        cell: ({ row }) => (
+            <Button variant="link" asChild>
+                <Link href={customerRoutes.edit(row.original.customer_id).url}>
+                    {row.original.customer_code}
+                </Link>
+            </Button>
+        ),
     },
 ];
 
@@ -62,18 +85,18 @@ export default function TransactionTable() {
         TransactionHeaderTable | undefined
     >(undefined);
 
-    const debouncedSearch = useDebounce(search)
+    const debouncedSearch = useDebounce(search);
 
     const tableColumns = useMemo(
         () => [
             selectColumn<TransactionHeaderTable>(),
             ...columns,
             actionsColumn<TransactionHeaderTable>({
-                onEdit: (row) => {
-                    router.visit(transactionRoutes.edit(row.id).url);
+                onEdit: (data) => {
+                    router.visit(transactionRoutes.edit(data.id).url);
                 },
-                onDelete: (row) => {
-                    setSelectedData(row);
+                onDelete: (data) => {
+                    setSelectedData(data);
                     setIsDeleteDialogOpen(true);
                 },
             }),

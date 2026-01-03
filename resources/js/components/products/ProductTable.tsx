@@ -26,12 +26,30 @@ import { useDebounce } from '@/hooks/use-debounce';
 
 const columns: ColumnDef<Product>[] = [
     {
+        accessorKey: 'id',
+        header: 'ID',
+    },
+    {
         accessorKey: 'code',
         header: 'Code',
+        cell: ({ row }) => (
+            <Button variant="link" asChild>
+                <Link href={productRoutes.edit(row.original.id).url}>
+                    {row.original.code}
+                </Link>
+            </Button>
+        ),
     },
     {
         accessorKey: 'name',
         header: 'Name',
+        cell: ({ row }) => (
+            <Button variant="link" asChild>
+                <Link href={productRoutes.edit(row.original.id).url}>
+                    {row.original.name}
+                </Link>
+            </Button>
+        ),
     },
     {
         accessorKey: 'stock',
@@ -63,11 +81,11 @@ export default function ProductTable() {
             selectColumn<Product>(),
             ...columns,
             actionsColumn<Product>({
-                onEdit: (row) => {
-                    router.visit(productRoutes.edit(row.id).url);
+                onEdit: (data) => {
+                    router.visit(productRoutes.edit(data.id).url);
                 },
-                onDelete: (row) => {
-                    setSelectedData(row);
+                onDelete: (data) => {
+                    setSelectedData(data);
                     setIsDeleteDialogOpen(true);
                 },
             }),
