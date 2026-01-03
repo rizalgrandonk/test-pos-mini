@@ -19,6 +19,8 @@ Route::prefix('customers/locations')->group(function () {
 Route::middleware('auth')->prefix('customers')->group(function () {
     Route::get('/table', [CustomerController::class, 'table'])
         ->name('customer.table');
+    Route::get('/search', [CustomerController::class, 'search'])
+        ->name('customer.search');
     Route::get('/create', [CustomerController::class, 'create'])
         ->name('customer.create');
     Route::delete('/delete/bulk', [CustomerController::class, 'bulkDestroy'])

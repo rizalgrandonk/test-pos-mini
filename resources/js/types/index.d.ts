@@ -65,3 +65,22 @@ export interface Customer {
     address?: string;
     postal_code?: string;
 }
+
+export interface TransactionHeader {
+    id: number;
+    invoice_number: string;
+    customer_id: number;
+    invoice_date: string;
+    total: number;
+    customer: Customer
+}
+
+export interface TransactionHeaderTable {
+    id: number;
+    invoice_number: string;
+    customer_id: number;
+    invoice_date: string;
+    total: number;
+    customer_name: string;
+    customer_code: string;
+}

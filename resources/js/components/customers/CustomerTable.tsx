@@ -1,6 +1,5 @@
 import CustomerController from '@/actions/App/Http/Controllers/CustomerController';
 import { useDataTableQuery } from '@/hooks/use-data-table-query';
-import { formatCurrency } from '@/lib/utils';
 import customerRoutes from '@/routes/customer';
 import { Customer } from '@/types';
 import { Form, Link, router } from '@inertiajs/react';
@@ -22,6 +21,7 @@ import {
     DialogTitle,
 } from '../ui/dialog';
 import { Spinner } from '../ui/spinner';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const columns: ColumnDef<Customer>[] = [
     {
@@ -66,6 +66,8 @@ export default function CustomerTable() {
         undefined,
     );
 
+    const debouncedSearch = useDebounce(search)
+
     const tableColumns = useMemo(
         () => [
             selectColumn<Customer>(),
@@ -94,7 +96,7 @@ export default function CustomerTable() {
         {
             page,
             perPage: perPage,
-            search,
+            search: debouncedSearch,
             sort: sortParam,
         },
     );

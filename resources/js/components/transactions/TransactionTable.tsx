@@ -1,8 +1,7 @@
-import ProductController from '@/actions/App/Http/Controllers/ProductController';
+import TransactionHeaderController from '@/actions/App/Http/Controllers/TransactionHeaderController';
 import { useDataTableQuery } from '@/hooks/use-data-table-query';
-import { formatCurrency } from '@/lib/utils';
-import productRoutes, { table as productTableRoute } from '@/routes/products';
-import { Product } from '@/types';
+import transactionRoutes from '@/routes/transactions';
+import { TransactionHeaderTable } from '@/types';
 import { Form, Link, router } from '@inertiajs/react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { ColumnDef, SortingState } from '@tanstack/react-table';
@@ -22,29 +21,36 @@ import {
     DialogTitle,
 } from '../ui/dialog';
 import { Spinner } from '../ui/spinner';
+import { formatCurrency } from '@/lib/utils';
+import {format} from 'date-fns/format'
 import { useDebounce } from '@/hooks/use-debounce';
 
-const columns: ColumnDef<Product>[] = [
+const columns: ColumnDef<TransactionHeaderTable>[] = [
     {
-        accessorKey: 'code',
-        header: 'Code',
+        accessorKey: 'invoice_number',
+        header: 'Invoice Number',
     },
     {
-        accessorKey: 'name',
-        header: 'Name',
+        accessorKey: 'invoice_date',
+        header: 'Invoice Date',
+        cell: ({ row }) => format(new Date(row.original.invoice_date), "dd-MM-yyyy")
     },
     {
-        accessorKey: 'stock',
-        header: 'Stock',
+        accessorKey: 'total',
+        header: 'Total',
+        cell: ({ row }) => formatCurrency(row.original.total)
     },
     {
-        accessorKey: 'price',
-        header: 'Price',
-        cell: ({ row }) => formatCurrency(row.original.price),
+        accessorKey: 'customer_name',
+        header: 'Customer Name',
+    },
+    {
+        accessorKey: 'customer_code',
+        header: 'Customer Code',
     },
 ];
 
-export default function ProductTable() {
+export default function TransactionTable() {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [search, setSearch] = useState('');
@@ -52,19 +58,19 @@ export default function ProductTable() {
     const [rowSelection, setRowSelection] = useState({});
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState<Product | undefined>(
-        undefined,
-    );
+    const [selectedData, setSelectedData] = useState<
+        TransactionHeaderTable | undefined
+    >(undefined);
 
     const debouncedSearch = useDebounce(search)
 
     const tableColumns = useMemo(
         () => [
-            selectColumn<Product>(),
+            selectColumn<TransactionHeaderTable>(),
             ...columns,
-            actionsColumn<Product>({
+            actionsColumn<TransactionHeaderTable>({
                 onEdit: (row) => {
-                    router.visit(productRoutes.edit(row.id).url);
+                    router.visit(transactionRoutes.edit(row.id).url);
                 },
                 onDelete: (row) => {
                     setSelectedData(row);
@@ -80,9 +86,9 @@ export default function ProductTable() {
             ? `${sorting[0].id}:${sorting[0].desc ? 'desc' : 'asc'}`
             : undefined;
 
-    const { data, ...query } = useDataTableQuery<Product>(
-        'products',
-        productTableRoute.url(),
+    const { data, ...query } = useDataTableQuery<TransactionHeaderTable>(
+        'transaction_headers',
+        transactionRoutes.table.url(),
         {
             page,
             perPage: perPage,
@@ -110,8 +116,8 @@ export default function ProductTable() {
 
                 <div className="flex items-center gap-4">
                     <Button asChild>
-                        <Link href={productRoutes.create().url}>
-                            <PlusIcon /> Add New Product
+                        <Link href={transactionRoutes.create().url}>
+                            <PlusIcon /> Add New Transaction
                         </Link>
                     </Button>
                 </div>
@@ -143,7 +149,7 @@ export default function ProductTable() {
                 )}
             </div>
 
-            <DeleteProductDialog
+            <DeleteDialog
                 isOpen={isDeleteDialogOpen}
                 onOpenChange={(open) => {
                     if (!open) {
@@ -159,7 +165,7 @@ export default function ProductTable() {
                 }}
             />
 
-            <BulkDeleteProductDialog
+            <BulkDeleteDialog
                 isOpen={isBulkDeleteDialogOpen}
                 onOpenChange={setIsBulkDeleteDialogOpen}
                 selectedIds={selectedIds}
@@ -173,14 +179,14 @@ export default function ProductTable() {
     );
 }
 
-function DeleteProductDialog({
+function DeleteDialog({
     selectedData,
     isOpen,
     onSuccess,
     onOpenChange,
 }: {
     isOpen?: boolean;
-    selectedData?: Product;
+    selectedData?: TransactionHeaderTable;
     onSuccess?: () => void;
     onOpenChange: (open: boolean) => void;
 }) {
@@ -192,19 +198,21 @@ function DeleteProductDialog({
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogTitle>
-                    Are you sure you want to delete this product?
+                    Are you sure you want to delete this transaction?
                 </DialogTitle>
                 <DialogDescription>
-                    This action can not be revert, make sure there is no
-                    transaction associated with this product
+                    This action can not be revert!
                 </DialogDescription>
                 <DialogDescription>
-                    <span className="font-bold">{selectedData.code}</span> -{' '}
-                    {selectedData.name}
+                    <span className="font-bold">
+                        {selectedData.invoice_number}
+                    </span>
                 </DialogDescription>
 
                 <Form
-                    {...ProductController.destroy.form(selectedData.id)}
+                    {...TransactionHeaderController.destroy.form(
+                        selectedData.id,
+                    )}
                     options={{
                         preserveScroll: true,
                     }}
@@ -236,7 +244,7 @@ function DeleteProductDialog({
                                     type="submit"
                                 >
                                     {processing && <Spinner />}
-                                    Delete Product
+                                    Delete
                                 </Button>
                             </DialogFooter>
                         </>
@@ -247,7 +255,7 @@ function DeleteProductDialog({
     );
 }
 
-function BulkDeleteProductDialog({
+function BulkDeleteDialog({
     selectedIds,
     isOpen,
     onSuccess,
@@ -267,15 +275,14 @@ function BulkDeleteProductDialog({
             <DialogContent>
                 <DialogTitle>
                     Are you sure you want to delete this {selectedIds.length}{' '}
-                    products?
+                    transactions?
                 </DialogTitle>
                 <DialogDescription>
-                    This action can not be revert, make sure there is no
-                    transaction associated with this products
+                    This action can not be revert!
                 </DialogDescription>
 
                 <Form
-                    {...ProductController.bulkDestroy.form()}
+                    {...TransactionHeaderController.bulkDestroy.form()}
                     transform={(data) => ({ ...data, ids: selectedIds })}
                     options={{
                         preserveScroll: true,
@@ -308,7 +315,7 @@ function BulkDeleteProductDialog({
                                     type="submit"
                                 >
                                     {processing && <Spinner />}
-                                    Delete Products
+                                    Delete
                                 </Button>
                             </DialogFooter>
                         </>

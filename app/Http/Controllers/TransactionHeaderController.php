@@ -2,44 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProductRequest;
+use App\Http\Requests\TransactionHeaderRequest;
+use App\Models\TransactionHeader;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use \App\Models\Product;
-use App\Models\TransactionDetail;
-use Illuminate\Support\Facades\Log;
 
-class ProductController extends Controller
+class TransactionHeaderController extends Controller
 {
     private static $allowedSortColumn = [
-        'name',
-        'code',
-        'price',
-        'stock'
+        'invoice_number' => 'transaction_headers.invoice_number',
+        'customer_id' => 'transaction_headers.customer_id',
+        'invoice_date' => 'transaction_headers.invoice_date',
+        'total' => 'transaction_headers.total',
+        'customer_name' => 'customers.name',
+        'customer_code' => 'customers.code',
     ];
 
     public function index(Request $request): Response
     {
-        return Inertia::render('products/index');
+        return Inertia::render('transactions/index');
     }
 
     public function table(Request $request)
     {
-        $query = Product::query();
+        $query = TransactionHeader::query()
+            ->select([
+                'transaction_headers.id',
+                'transaction_headers.invoice_number',
+                'transaction_headers.customer_id',
+                'transaction_headers.invoice_date',
+                'transaction_headers.total',
+                'customers.name as customer_name',
+                'customers.code as customer_code',
+            ])
+            ->leftJoin(
+                'customers',
+                'customers.id',
+                '=',
+                'transaction_headers.customer_id'
+            );
 
         if ($search = $request->get('search')) {
             $query->where(function ($query) use ($search) {
-                $query->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('code', 'LIKE', "%{$search}%");
+                $query->where('invoice_number', 'LIKE', "%{$search}%");
             });
         }
 
         if ($request->filled('sort')) {
             [$column, $direction] = explode(':', $request->sort);
 
-            if (in_array($column, self::$allowedSortColumn)) {
-                $query->orderBy($column, $direction);
+            if (isset(self::$allowedSortColumn[$column])) {
+                $query->orderBy(self::$allowedSortColumn[$column], $direction);
             }
         }
 
@@ -50,30 +65,31 @@ class ProductController extends Controller
 
     public function create(Request $request): Response
     {
-        return Inertia::render('products/create');
+        return Inertia::render('transactions/create');
     }
-    
+
     public function edit($id): Response
     {
-        $product = Product::find($id);
+        $transaction = TransactionHeader::find($id);
 
-        if (!$product) {
+        if (!$transaction) {
             return Inertia::render('404');
         }
 
-        return Inertia::render('products/edit', [
-            'product' => $product
+        return Inertia::render('transactions/edit', [
+            'transaction' => $transaction
         ]);
     }
 
-    public function store(ProductRequest $request)
+    public function store(TransactionHeaderRequest $request)
     {
         try {
             $data = $request->validated();
+            $data['invoice_number'] = TransactionHeader::generateInvoiceNumber();
 
-            $product = Product::create($data);
+            $transaction = TransactionHeader::create($data);
 
-            return to_route('products.edit', ['id' => $product->id]);
+            return to_route('transactions.edit', ['id' => $transaction->id]);
         } catch (\Exception $e) {
             Log::error('Product store error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -88,12 +104,12 @@ class ProductController extends Controller
         }
     }
 
-    public function update($id, ProductRequest $request)
+    public function update($id, TransactionHeaderRequest $request)
     {
         try {
-            $product = Product::find($id);
+            $transaction = TransactionHeader::find($id);
 
-            if (!$product) {
+            if (!$transaction) {
                 return back()->withErrors([
                     'delete' => 'Data not found',
                 ])->with(
@@ -104,11 +120,11 @@ class ProductController extends Controller
 
             $data = $request->validated();
 
-            $product->update($data);
+            $transaction->update($data);
 
-            return back()->with('success', 'Product updated successfully');
+            return back()->with('success', 'Transaction updated successfully');
         } catch (\Exception $e) {
-            Log::error('Product update error: ' . $e->getMessage(), [
+            Log::error('Transaction update error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -124,9 +140,9 @@ class ProductController extends Controller
     public function destroy($id)
     {
         try {
-            $product = Product::find($id);
+            $transaction = TransactionHeader::find($id);
 
-            if (!$product) {
+            if (!$transaction) {
                 return back()->withErrors([
                     'delete' => 'Data not found',
                 ])->with(
@@ -135,21 +151,12 @@ class ProductController extends Controller
                 );
             }
 
-            if (TransactionDetail::where('product_id', $product->id)->exists()) {
-                return back()->withErrors([
-                    'delete' => 'Transaction with the product exists',
-                ])->with(
-                    'error',
-                    'Transaction with the product exists',
-                );
-            }
+            $transaction->delete();
 
-            $product->delete();
-
-            return back()->with('success', 'Product deleted successfully.');
+            return back()->with('success', 'Transaction deleted successfully.');
         } catch (\Throwable $e) {
-            Log::error('Product delete error', [
-                'product_id' => $id,
+            Log::error('Transaction delete error', [
+                'transaction_id' => $id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -167,27 +174,18 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:products,id'],
+            'ids.*' => ['integer', 'exists:transaction_headers,id'],
         ]);
 
         try {
-            if (TransactionDetail::whereIn('product_id', $validated['ids'])->exists()) {
-                return back()->withErrors([
-                    'delete' => 'Transaction with the product exists',
-                ])->with(
-                    'error',
-                    'Transaction with the product exists',
-                );
-            }
-
-            Product::whereIn('id', $validated['ids'])->delete();
+            TransactionHeader::whereIn('id', $validated['ids'])->delete();
 
             return back()->with(
                 'success',
-                count($validated['ids']) . ' products deleted successfully.'
+                count($validated['ids']) . ' transactions deleted successfully.'
             );
         } catch (\Throwable $e) {
-            Log::error('Bulk product delete error', [
+            Log::error('Bulk transaction delete error', [
                 'ids' => $validated['ids'],
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

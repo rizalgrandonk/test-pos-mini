@@ -51,6 +51,21 @@ class CustomerController extends Controller
         );
     }
 
+    public function search(Request $request)
+    {
+        $search = $request->string('q');
+
+        return Customer::query()
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('code', 'LIKE', "%{$search}%")
+                    ->orWhere('id', '=', $search);
+            })
+            ->orderBy('name')
+            ->limit(10)
+            ->get();
+    }
+
     public function create(Request $request): Response
     {
         return Inertia::render('customers/create');

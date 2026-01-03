@@ -29,6 +29,11 @@ class Customer extends Model
         'postal_code',
     ];
 
+    public function transactionHeaders()
+    {
+        return $this->hasMany(TransactionHeader::class, 'customer_id');
+    }
+
     public static function getProvinces()
     {
         $response = Http::get(self::LOCATION_BASE_URL . 'provinsi/get/');

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import customerRoutes from '@/routes/customer';
+import transctionRoutes from '@/routes/transactions';
 import productRoutes from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
@@ -18,6 +19,7 @@ import {
     BookOpen,
     Folder,
     LayoutGrid,
+    ReceiptTextIcon,
     StretchHorizontalIcon,
     UsersIcon,
 } from 'lucide-react';
@@ -38,6 +40,11 @@ const mainNavItems: NavItem[] = [
         title: 'Customer',
         href: customerRoutes.index(),
         icon: UsersIcon,
+    },
+    {
+        title: 'Transaction',
+        href: transctionRoutes.index(),
+        icon: ReceiptTextIcon,
     },
 ];
 
