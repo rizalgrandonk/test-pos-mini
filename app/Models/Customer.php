@@ -34,6 +34,22 @@ class Customer extends Model
         return $this->hasMany(TransactionHeader::class, 'customer_id');
     }
 
+    public function scopeThisMonth($query)
+    {
+        return $query->whereBetween('created_at', [
+            now()->startOfMonth(),
+            now()->endOfMonth(),
+        ]);
+    }
+
+    public function scopeLastMonth($query)
+    {
+        return $query->whereBetween('created_at', [
+            now()->subMonth()->startOfMonth(),
+            now()->subMonth()->endOfMonth(),
+        ]);
+    }
+
     public static function getProvinces()
     {
         $response = Http::get(self::LOCATION_BASE_URL . 'provinsi/get/');

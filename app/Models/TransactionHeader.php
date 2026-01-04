@@ -34,6 +34,22 @@ class TransactionHeader extends Model
         return $this->hasMany(TransactionDetail::class, 'transaction_header_id');
     }
 
+    public function scopeThisMonth($query)
+    {
+        return $query->whereBetween('invoice_date', [
+            now()->startOfMonth(),
+            now()->endOfMonth(),
+        ]);
+    }
+
+    public function scopeLastMonth($query)
+    {
+        return $query->whereBetween('invoice_date', [
+            now()->subMonth()->startOfMonth(),
+            now()->subMonth()->endOfMonth(),
+        ]);
+    }
+
     // INV/YYMM/****
     public static function generateInvoiceNumber(): string
     {

@@ -17,6 +17,10 @@ class CustomerFactory extends Factory
      */
     public function definition(): array
     {
+        $dateCreated = $this->faker->dateTimeBetween(
+            '-3 months',
+            'yesterday'
+        );
         return [
             'name' => $this->faker->firstName . ' ' . $this->faker->lastName,
             'province' => 'Jawa Timur',
@@ -29,6 +33,8 @@ class CustomerFactory extends Factory
             'village_id' => 36589,
             'address' => $this->faker->streetAddress,
             'postal_code' => '60227',
+            'created_at' => $dateCreated,
+            'updated_at' => $dateCreated,
         ];
     }
 

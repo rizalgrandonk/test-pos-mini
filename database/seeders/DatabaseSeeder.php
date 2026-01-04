@@ -47,15 +47,27 @@ class DatabaseSeeder extends Seeder
         // Transaction Header
         $transactionHeaders = collect();
 
-        $transactionsPerMonth = 20;
         $monthsBack = 3;
 
-        foreach (range(1, $monthsBack) as $monthOffset) {
+        foreach (range(0, $monthsBack - 1) as $monthOffset) {
             $date = Carbon::now()->subMonths($monthOffset);
             $yearMonth = $date->format('ym');
             $sequence = 1;
 
+            $transactionsPerMonth = rand(5, 20);
+
             foreach (range(1, $transactionsPerMonth) as $i) {
+                $startDate = $date->copy()->startOfMonth();
+                $endDate = $date->copy()->endOfMonth();
+
+                if ($date->isSameMonth(Carbon::now())) {
+                    $endDate = Carbon::yesterday();
+                }
+
+                $invoiceDate = Carbon::createFromTimestamp(
+                    rand($startDate->timestamp, $endDate->timestamp)
+                );
+
                 $transactionHeaders->push(
                     TransactionHeader::create([
                         'invoice_number' => sprintf(
@@ -63,11 +75,11 @@ class DatabaseSeeder extends Seeder
                             $yearMonth,
                             $sequence++
                         ),
-                        'invoice_date' => $date
-                            ->copy()
-                            ->day(rand(1, $date->daysInMonth)),
+                        'invoice_date' => $invoiceDate,
                         'customer_id' => $customerIds->random(),
-                        'total' => 0
+                        'total' => 0,
+                        'created_at' => $invoiceDate,
+                        'updated_at' => $invoiceDate,
                     ])
                 );
             }
@@ -101,6 +113,8 @@ class DatabaseSeeder extends Seeder
                     'price' => $price,
                     'net_price' => $price,
                     'subtotal' => $price * $qty,
+                    'created_at' => $header->invoice_date,
+                    'updated_at' => $header->invoice_date,
                 ]);
 
                 // ===== DISCOUNTS =====
@@ -127,6 +141,8 @@ class DatabaseSeeder extends Seeder
                         'sequence' => $sequence++,
                         'type' => $type,
                         'value' => $value,
+                        'created_at' => $header->invoice_date,
+                        'updated_at' => $header->invoice_date,
                     ]);
                 }
 

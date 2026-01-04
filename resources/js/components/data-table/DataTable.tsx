@@ -6,6 +6,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import {
     ColumnDef,
     flexRender,
@@ -26,6 +27,7 @@ interface DataTableProps<TData> {
     onSortingChange: OnChangeFn<SortingState>;
     rowSelection: RowSelectionState;
     onRowSelectionChange: OnChangeFn<RowSelectionState>;
+    stickyHeader?: boolean;
 }
 
 export function DataTable<TData>({
@@ -37,6 +39,7 @@ export function DataTable<TData>({
     onSortingChange,
     rowSelection,
     onRowSelectionChange,
+    stickyHeader = true,
 }: DataTableProps<TData>) {
     const table = useReactTable({
         data,
@@ -55,7 +58,12 @@ export function DataTable<TData>({
 
     return (
         <Table noWrap className="w-full table-fixed">
-            <TableHeader className="sticky top-0 z-10 bg-sidebar-accent">
+            <TableHeader
+                className={cn(
+                    'bg-sidebar-accent',
+                    stickyHeader ? 'sticky top-0 z-10' : '',
+                )}
+            >
                 {table.getHeaderGroups().map((group) => (
                     <TableRow key={group.id}>
                         {group.headers.map((header) => (
@@ -100,7 +108,7 @@ export function DataTable<TData>({
             <TableBody>
                 {table.getRowModel().rows.length ? (
                     table.getRowModel().rows.map((row) => (
-                        <TableRow key={row.original.id}>
+                        <TableRow key={row.id}>
                             {row.getVisibleCells().map((cell) => (
                                 <TableCell key={cell.id}>
                                     {flexRender(

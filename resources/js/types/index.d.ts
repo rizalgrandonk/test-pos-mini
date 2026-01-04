@@ -88,14 +88,14 @@ export interface TransactionDetail {
 
     transaction_header?: TransactionHeader;
     product?: Product;
-    discounts?: TransactionDiscount[]
+    discounts?: TransactionDiscount[];
 }
 
 export interface TransactionDiscount {
-    id: number
-    sequence: number
-    type: 'PERCENTAGE' | 'AMOUNT'
-    value: number
+    id: number;
+    sequence: number;
+    type: 'PERCENTAGE' | 'AMOUNT';
+    value: number;
 }
 
 export interface TransactionHeaderTable {
@@ -135,3 +135,28 @@ export type TransactionDetailForm = {
     price: number | '';
     discounts: DiscountForm[];
 };
+
+export type DashboardStats = {
+    monthlyRevenue: number;
+    revenueGrowth: number;
+    monthlyTransactions: number;
+    newCustomers: number;
+    customerGrowth: number;
+    lowStock: number;
+};
+
+export interface TopCustomer {
+    id: number;
+    name: string;
+    code: string;
+    transactions_count: number;
+    total_spent: number;
+}
+
+export interface TopProduct {
+    id: number;
+    name: string;
+    code: string;
+    total_qty: number;
+    total_revenue: number;
+}

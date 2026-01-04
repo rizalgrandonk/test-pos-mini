@@ -21,6 +21,7 @@ class CustomerController extends Controller
         'village',
         'address',
         'postal_code',
+        'created_at',
     ];
 
     public function index(Request $request): Response

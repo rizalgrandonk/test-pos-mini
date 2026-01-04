@@ -26,10 +26,6 @@ import { useDebounce } from '@/hooks/use-debounce';
 
 const columns: ColumnDef<Product>[] = [
     {
-        accessorKey: 'id',
-        header: 'ID',
-    },
-    {
         accessorKey: 'code',
         header: 'Code',
         cell: ({ row }) => (
