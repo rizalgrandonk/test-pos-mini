@@ -17,6 +17,7 @@ import customerRoutes from '@/routes/customer';
 import productRoutes from '@/routes/products';
 import {
     DashboardStats,
+    MonthlyRevenue,
     TopCustomer,
     TopProduct,
     type BreadcrumbItem,
@@ -24,6 +25,14 @@ import {
 import { Head, Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react';
+
+import {
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+} from '@/components/ui/chart';
+import { format, parse } from 'date-fns';
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,10 +45,12 @@ export default function Dashboard({
     stats,
     topCustomers,
     topProducts,
+    monthlyRevenue,
 }: {
     stats: DashboardStats;
     topCustomers: TopCustomer[];
     topProducts: TopProduct[];
+    monthlyRevenue: MonthlyRevenue[];
 }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -79,6 +90,9 @@ export default function Dashboard({
                         subtitle="Needs attention"
                         description="Below minimum stock (20)"
                     />
+                </div>
+                <div>
+                    <MonthlyRevenueChart data={monthlyRevenue} />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                     <TopCustomersTable data={topCustomers} />
@@ -276,6 +290,95 @@ function TopProductsTable({
                     onSortingChange={() => undefined}
                     onRowSelectionChange={() => undefined}
                 />
+            </CardContent>
+        </Card>
+    );
+}
+
+export function MonthlyRevenueChart({ data }: { data: MonthlyRevenue[] }) {
+    console.log({ data });
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Revenue</CardTitle>
+                <CardDescription>
+                    This is total montly revenue for the last 6 months{' '}
+                </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+                <ChartContainer
+                    config={{
+                        total: {
+                            label: 'Tootal',
+                            color: 'var(--chart-1)',
+                        },
+                    }}
+                    className="aspect-auto h-[350px] w-full"
+                >
+                    <AreaChart data={data}>
+                        <defs>
+                            <linearGradient
+                                id="fillTotal"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop
+                                    offset="5%"
+                                    stopColor="var(--color-total)"
+                                    stopOpacity={0.8}
+                                />
+                                <stop
+                                    offset="95%"
+                                    stopColor="var(--color-total)"
+                                    stopOpacity={0.1}
+                                />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="month"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={4}
+                            minTickGap={4}
+                            interval="preserveStartEnd"
+                            tickFormatter={(value) => {
+                                return format(
+                                    parse(value, 'yyyy-MM', new Date()),
+                                    'MMM yyyy',
+                                );
+                            }}
+                        />
+                        <ChartTooltip
+                            cursor={false}
+                            content={
+                                <ChartTooltipContent
+                                    labelFormatter={(value) => {
+                                        return format(
+                                            parse(value, 'yyyy-MM', new Date()),
+                                            'MMM yyyy',
+                                        );
+                                    }}
+                                    formatter={(value) =>
+                                        formatCurrency(Number(value))
+                                    }
+                                    indicator="dot"
+                                />
+                            }
+                        />
+                        <Area
+                            dataKey="total"
+                            type="natural"
+                            fill="url(#fillTotal)"
+                            stroke="var(--color-total)"
+                            stackId="a"
+                        />
+                        {/* <ChartLegend content={<ChartLegendContent />} /> */}
+                    </AreaChart>
+                </ChartContainer>
             </CardContent>
         </Card>
     );

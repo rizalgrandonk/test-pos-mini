@@ -11,7 +11,7 @@ The project is designed as a **full-stack monolith** with a SPA-like experience.
 ### Backend
 - Laravel 12
 - PHP 8.2+
-- MySQL / PostgreSQL / sqlite
+- MySQL
 - Inertia.js
 
 ### Frontend
@@ -33,7 +33,7 @@ Make sure you have the following installed:
 - Composer
 - Node.js **>= 18**
 - npm
-- MySQL / PostgreSQL (or use default sqlite)
+- MySQL
 - Git
 
 ---
@@ -63,7 +63,6 @@ cp .env.example .env
 ```
 Update the following values in `.env`:
 
-_keep the `DB_CONNECTION`  to `sqlite` if you want to use the default sqlite database_
 ```bash
 APP_NAME="Your App Name"
 APP_ENV=local
@@ -119,7 +118,6 @@ Default user login generated from seeder:
 │   └── Providers/
 ├── config/
 ├── database
-│   ├── database.sqlite        # used when using sqlite
 │   ├── factories/
 │   ├── migrations/
 │   └── seeders/

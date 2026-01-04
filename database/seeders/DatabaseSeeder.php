@@ -47,14 +47,14 @@ class DatabaseSeeder extends Seeder
         // Transaction Header
         $transactionHeaders = collect();
 
-        $monthsBack = 3;
+        $monthsBack = 6;
 
         foreach (range(0, $monthsBack - 1) as $monthOffset) {
             $date = Carbon::now()->subMonths($monthOffset);
             $yearMonth = $date->format('ym');
             $sequence = 1;
 
-            $transactionsPerMonth = rand(5, 20);
+            $transactionsPerMonth = rand(5, 10);
 
             foreach (range(1, $transactionsPerMonth) as $i) {
                 $startDate = $date->copy()->startOfMonth();

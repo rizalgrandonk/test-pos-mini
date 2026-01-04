@@ -69,6 +69,30 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $start = now()->subMonths(5)->startOfMonth();
+        $end = now()->endOfMonth();
+
+        $rawRevenue = TransactionHeader::query()
+            ->whereBetween('invoice_date', [$start, $end])
+            ->select(
+                DB::raw("DATE_FORMAT(invoice_date, '%Y-%m') as month"),
+                DB::raw('SUM(total) as total')
+            )
+            ->groupBy(DB::raw("DATE_FORMAT(invoice_date, '%Y-%m')"))
+            ->orderBy(DB::raw("DATE_FORMAT(invoice_date, '%Y-%m')"))
+            ->get()
+            ->keyBy('month');
+        $lastSixMonths = collect();
+
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i)->format('Y-m');
+
+            $lastSixMonths->push([
+                'month' => $month,
+                'total' => (float) ($rawRevenue[$month]->total ?? 0),
+            ]);
+        }
+
         return Inertia::render('dashboard', [
             'stats' => [
                 'monthlyRevenue' => round($thisMonthRevenue),
@@ -83,6 +107,7 @@ class DashboardController extends Controller
             ],
             'topCustomers' => $topCustomers,
             'topProducts' => $topProducts,
+            'monthlyRevenue' => $lastSixMonths
         ]);
     }
 }

@@ -160,3 +160,8 @@ export interface TopProduct {
     total_qty: number;
     total_revenue: number;
 }
+
+export interface MonthlyRevenue {
+    month: string;
+    total: number;
+}
