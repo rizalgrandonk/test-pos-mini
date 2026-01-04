@@ -101,6 +101,9 @@ composer run dev
 #or
 php artisan serve
 ```
+Default user login generated from seeder:
+- email: test@example.com
+- password: password
 
 ---
 
